@@ -1,0 +1,31 @@
+Function r_crit(n As Long) As Double
+    Dim df As Long
+    Dim t_crit As Double
+    Dim sig_level As Double
+    Dim alternative As String
+
+    ' Set default values
+    sig_level = 0.05
+    alternative = "two.sided"
+
+    ' Validasi alternatif
+    If alternative <> "one.sided" And alternative <> "two.sided" Then
+        MsgBox "alternative should be either 'one.sided' or 'two.sided'", vbCritical
+        Exit Function
+    End If
+
+    ' Sesuaikan tingkat signifikansi jika alternatif adalah "two.sided"
+    If alternative = "two.sided" Then
+        sig_level = sig_level / 2
+    End If
+
+    ' Hitung derajat kebebasan
+    df = n - 2
+
+    ' Hitung nilai kritis t
+    t_crit = Application.WorksheetFunction.T_Inv(1 - sig_level, df)
+
+    ' Hitung nilai kritis r
+    r_crit = Sqr(t_crit ^ 2 / (t_crit ^ 2 + df))
+
+End Function
