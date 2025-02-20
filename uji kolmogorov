@@ -1,0 +1,79 @@
+Function UjiKolmo(DataRange As Range) As Variant
+    Dim n As Long
+    Dim i As Long
+    Dim Data() As Double
+    Dim SortedData() As Double
+    Dim Mean As Double
+    Dim StdDev As Double
+    Dim D As Double
+    Dim DPlus As Double
+    Dim DMinus As Double
+    Dim CDF_Observed As Double
+    Dim CDF_Expected As Double
+
+    n = DataRange.Count
+    ReDim Data(1 To n)
+    ReDim SortedData(1 To n)
+
+    ' Memasukkan data ke array
+    For i = 1 To n
+        Data(i) = DataRange.Cells(i).Value
+    Next i
+
+    ' Menghitung rata-rata dan deviasi standar sampel
+    Mean = Application.WorksheetFunction.Average(DataRange)
+    StdDev = Application.WorksheetFunction.StDev_S(DataRange)
+
+    ' Mengurutkan data
+    For i = 1 To n
+        SortedData(i) = Data(i)
+    Next i
+    QuickSort SortedData, 1, n
+
+    ' Menghitung D+, D-, dan D
+    DPlus = 0
+    DMinus = 0
+
+    For i = 1 To n
+        CDF_Observed = i / n
+        CDF_Expected = Application.WorksheetFunction.Norm_S_Dist((SortedData(i) - Mean) / StdDev, True)
+        DPlus = Application.WorksheetFunction.Max(DPlus, CDF_Observed - CDF_Expected)
+        DMinus = Application.WorksheetFunction.Max(DMinus, CDF_Expected - (i - 1) / n)
+    Next i
+
+    D = Application.WorksheetFunction.Max(DPlus, DMinus)
+
+    ' Mengembalikan nilai D, D+, dan D-
+    UjiKolmo = Array(D, DPlus, DMinus)
+End Function
+
+Sub QuickSort(arr As Variant, low As Long, high As Long)
+    Dim i As Long, j As Long
+    Dim pivot As Double
+    Dim temp As Double
+
+    If low < high Then
+        pivot = arr((low + high) \ 2)
+        i = low
+        j = high
+
+        Do While i <= j
+            Do While arr(i) < pivot
+                i = i + 1
+            Loop
+            Do While arr(j) > pivot
+                j = j - 1
+            Loop
+            If i <= j Then
+                temp = arr(i)
+                arr(i) = arr(j)
+                arr(j) = temp
+                i = i + 1
+                j = j - 1
+            End If
+        Loop
+
+        QuickSort arr, low, j
+        QuickSort arr, i, high
+    End If
+End Sub
